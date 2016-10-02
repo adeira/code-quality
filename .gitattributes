@@ -1,0 +1,4 @@
+.gitattributes export-ignore
+.gitignore export-ignore
+screenshots/ export-ignore
+*.sh eol=lf
