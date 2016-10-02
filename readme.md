@@ -1,23 +1,46 @@
-Add those rules into playbook of your favorite CI server.
-
-For Travis or Gitlab-CI:
+Add those rules into playbook of your favorite CI server. **You should create custom `ruleset.xml` with this content:**
 
 ```
-script:
+<?xml version="1.0"?>
+<ruleset>
+	<rule ref="./vendor/adeira/code-quality/ruleset.xml"/>
+</ruleset>
+```
+
+For Travis (similar for Gitlab-CI):
+
+```
+before_script:
   - vendor/bin/parallel-lint . -e php,php3,php4,php5,phtml,phpt --exclude vendor --blame
+
+after_script:
   - vendor/bin/phpcs --standard=ruleset.xml --extensions=php --encoding=utf-8 --tab-width=4 -sp app/ src/ --ignore=bootstrap.php
   - vendor/bin/phpcs --standard=ruleset.xml --extensions=php,phpt --encoding=utf-8 --tab-width=4 -sp tests/ --ignore=*/output/*,_temp/*,bootstrap.php
 ```
 
-Complete usage:
+Complete Travis example:
 
 ```
-script:
+language: php
+
+php:
+  - 7.0
+  - 7.1
+
+before_script:
+  - composer selfupdate --no-progress
+  - travis_retry composer install --prefer-dist
   - vendor/bin/parallel-lint . -e php,php3,php4,php5,phtml,phpt --exclude vendor --blame
-  - RUNLEVEL=10 vendor/bin/run-tests tests/ --colors 1 -C # not incuded in this package - install mrtnzlml/testbench
-  - vendor/bin/phpcs --standard=ruleset.xml --extensions=php --encoding=utf-8 --tab-width=4 -sp app/ src/ --ignore=bootstrap.php
+
+script:
+  - vendor/bin/tester tests -C
+
+after_script:
+  - vendor/bin/phpcs --standard=ruleset.xml --extensions=php --encoding=utf-8 --tab-width=4 -sp src/ --ignore=bootstrap.php
   - vendor/bin/phpcs --standard=ruleset.xml --extensions=php,phpt --encoding=utf-8 --tab-width=4 -sp tests/ --ignore=*/output/*,_temp/*,bootstrap.php
-  - php www/index.php orm:validate-schema --ansi --debug-mode # not included in this package - install kdyby/doctrine
+
+notifications:
+  email: false
 ```
 
 Setup your favorite editor. In my case it's PhpStorm. First setup code sniffer:
